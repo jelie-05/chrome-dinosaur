@@ -15,7 +15,7 @@ import threading
 from src.internal.fft_spectrum import *
 from src.AvianRDKWrapper.ifxRadarSDK import *
 from src.utils.doppler import DopplerAlgo
-from src.utils.common import do_inference_processing, do_preprocessing
+from src.utils.common_raspi import do_inference_processing_np
 from src.utils.debouncer_time import DebouncerTime
 
 pygame.init()
@@ -218,7 +218,7 @@ class PyGameInference:
         return self.idx_to_class[label]
 
     def run(self):
-        HOST = '192.168.1.2'
+        HOST = '192.168.1.2' # Raspi: HOST = '192.168.1.1'
         PORT = 5005
         with Device() as device:
             num_rx_antennas = device.get_sensor_information()["num_rx_antennas"]
@@ -251,7 +251,7 @@ class PyGameInference:
                     dfft_dbfs = algo.compute_doppler_map(mat, i_ant)
                     data_all_antennas.append(dfft_dbfs)
 
-                range_doppler = do_inference_processing(data_all_antennas)
+                range_doppler = do_inference_processing_np(data_all_antennas)
                 self.debouncer.add_scan(range_doppler)
 
                 dtm, rtm = self.debouncer.get_scans()
