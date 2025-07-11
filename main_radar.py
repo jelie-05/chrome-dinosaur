@@ -14,7 +14,7 @@ import threading
 from src.internal.fft_spectrum import *
 from src.AvianRDKWrapper.ifxRadarSDK import *
 from src.utils.doppler import DopplerAlgo
-from src.utils.common import do_inference_processing_np, do_preprocessing
+from src.utils.common import do_inference_processing, do_preprocessing
 from src.utils.debouncer_time import DebouncerTime
 
 pygame.init()
@@ -248,7 +248,9 @@ class PyGameInference:
                     dfft_dbfs = algo.compute_doppler_map(mat, i_ant)
                     data_all_antennas.append(dfft_dbfs)
 
-                range_doppler = do_inference_processing_np(data_all_antennas)
+                range_doppler = do_inference_processing(data_all_antennas)
+                print(f"Range-Doppler shape: {range_doppler.shape}")
+                input("Press Enter to continue...")
                 self.debouncer.add_scan(range_doppler)
 
                 dtm, rtm = self.debouncer.get_scans()
