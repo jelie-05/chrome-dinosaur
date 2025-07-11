@@ -197,10 +197,10 @@ class PyGameInference:
         self.observation_length = observation_length
 
         self.debouncer = DebouncerTime(memory_length=self.observation_length)
-        self.interpreter = tflite.Interpreter(model_path="runs/trained_models/train_0613.tflite")
-        self.interpreter.allocate_tensors()
-        self.input_details = self.interpreter.get_input_details()
-        self.output_details = self.interpreter.get_output_details()
+        # self.interpreter = tflite.Interpreter(model_path="runs/trained_models/train_0613.tflite")
+        # self.interpreter.allocate_tensors()
+        # self.input_details = self.interpreter.get_input_details()
+        # self.output_details = self.interpreter.get_output_details()
 
         with open('runs/trained_models/train_0606-idx_mapping.pkl', 'rb') as f:
             self.idx_to_class = pickle.load(f)
@@ -287,9 +287,6 @@ class PyGameInference:
                 rdtm_np = rdtm_np.transpose(0, 2, 1, 3)
 
                 if rdtm_np.shape[3] >= self.observation_length:
-                    self.interpreter.set_tensor(self.input_details[0]['index'], rdtm_np)
-                    self.interpreter.invoke()
-
                     # Send data to TCP server
                     print("Sending data to TCP server...")
                     rdtm_np = rdtm_np.astype(np.float32)
@@ -318,17 +315,7 @@ class PyGameInference:
 
                     # Convert floats to numpy array
                     floats = np.array(floats, dtype=np.float32) 
-                    floats = floats.reshape(1, -1)  # shape: (1, 4)
-                    
-                    # TODO: get "output" from TCP
-                    output = self.interpreter.get_tensor(self.output_details[0]['index'])
-                    output = np.array(output)
-
-                    print(f"float array shape: {floats.shape}, output shape: {output.shape}")
-                    
-                    print(f"output: {output}")
-                    print(f"floats: {floats}")
-                    
+                    output = floats.reshape(1, -1)  # shape: (1, 4)
                     
                     if output.ndim == 1:
                         output = output[None, :]
