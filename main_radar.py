@@ -236,6 +236,7 @@ class PyGameInference:
             }
 
             cfg = device.metrics_to_config(**metric)
+            print(f"Configuring device with: {cfg}")
             device.set_config(**cfg)
 
             algo = DopplerAlgo(device.get_config(), num_rx_antennas)

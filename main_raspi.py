@@ -237,8 +237,7 @@ class PyGameInference:
             frame_repetition_time_s = 0.15,   # 0.15s, frame_Rate = 6.667Hz
             mimo_mode = 'off'                 # MIMO disabled
         )
-        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-        #     sock.connect((HOST, PORT))
+
         with Avian.Device() as device, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.connect((HOST, PORT))
             num_rx_antennas = 3 #device.get_sensor_information()["num_rx_antennas"]
