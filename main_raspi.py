@@ -13,7 +13,7 @@ import numpy as np
 import threading
 
 from ifxAvian import Avian
-from src.utils.doppler import DopplerAlgo
+from src.utils.doppler_raspi import DopplerAlgo
 from src.utils.common_raspi import do_inference_processing_np
 from src.utils.debouncer_time import DebouncerTime
 
@@ -253,7 +253,7 @@ class PyGameInference:
 
                 range_doppler = do_inference_processing_np(data_all_antennas)
                 print(f"rangedoppler: {range_doppler.shape}")
-                self.debouncer.add_scan(range_doppler)
+                self.debouncer.add_scan_np(range_doppler)
 
                 dtm, rtm = self.debouncer.get_scans()
 
