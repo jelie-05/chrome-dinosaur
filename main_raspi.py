@@ -217,7 +217,8 @@ class PyGameInference:
         return self.idx_to_class[label]
 
     def run(self):
-        HOST = '192.168.1.2' # Raspi: HOST = '192.168.1.1'
+        # HOST = '192.168.1.2' # Raspi: HOST = '192.168.1.1'
+        HOST = '127.0.0.1'
         PORT = 5005
         num_beams = 27         # number of beams
         max_angle_degrees = 40 # maximum angle, angle ranges from -40 to +40 degrees
@@ -236,8 +237,10 @@ class PyGameInference:
             frame_repetition_time_s = 0.15,   # 0.15s, frame_Rate = 6.667Hz
             mimo_mode = 'off'                 # MIMO disabled
         )
-
-        with Avian.Device() as device:
+        # with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        #     sock.connect((HOST, PORT))
+        with Avian.Device() as device, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.connect((HOST, PORT))
             num_rx_antennas = 3 #device.get_sensor_information()["num_rx_antennas"]
             device.set_config(config)
 
@@ -252,7 +255,6 @@ class PyGameInference:
                     data_all_antennas.append(dfft_dbfs)
 
                 range_doppler = do_inference_processing_np(data_all_antennas)
-                print(f"rangedoppler: {range_doppler.shape}")
                 self.debouncer.add_scan_np(range_doppler)
 
                 dtm, rtm = self.debouncer.get_scans()
@@ -269,15 +271,15 @@ class PyGameInference:
                     self.interpreter.set_tensor(self.input_details[0]['index'], rdtm_np)
                     self.interpreter.invoke()
 
-                    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-                        sock.connect((HOST, PORT))
-                        rdtm_np = rdtm_np.astype(np.float32)
-                        # sent_data = rdtm_np.tobytes()
-                        sent_data = pickle.dumps(rdtm_np)
-                        frame_size = len(sent_data)
-                        sock.sendall(frame_size.to_bytes(4, 'big'))
-                        sock.sendall(sent_data)
-
+                    print("Sending data to TCP server...")
+                    rdtm_np = rdtm_np.astype(np.float32)
+                    sent_data = rdtm_np.tobytes()
+                    # sent_data = pickle.dumps(rdtm_np)
+                    frame_size = len(sent_data)
+                    sock.sendall(frame_size.to_bytes(4, 'big'))
+                    sock.sendall(sent_data)
+                    
+                    print("test1")
                     # TODO: get "output" from TCP
                     output = self.interpreter.get_tensor(self.output_details[0]['index'])
                     output = np.array(output)

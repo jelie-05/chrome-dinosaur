@@ -249,8 +249,6 @@ class PyGameInference:
                     data_all_antennas.append(dfft_dbfs)
 
                 range_doppler = do_inference_processing(data_all_antennas)
-                print(f"Range-Doppler shape: {range_doppler.shape}")
-                input("Press Enter to continue...")
                 self.debouncer.add_scan(range_doppler)
 
                 dtm, rtm = self.debouncer.get_scans()

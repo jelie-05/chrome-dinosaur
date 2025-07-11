@@ -259,6 +259,7 @@ class PyGameInference:
 
                 rtm_np = np.stack(rtm, axis=1)
                 dtm_np = np.stack(dtm, axis=1)
+                print(f"rtm_np shape: {rtm_np.shape}, dtm_np shape: {dtm_np.shape}")
                 rtm_np = np.squeeze(rtm_np, axis=2)
                 dtm_np = np.squeeze(dtm_np, axis=2)
                 rdtm_np = np.stack([rtm_np, dtm_np], axis=1)
