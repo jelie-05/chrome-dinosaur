@@ -11,6 +11,8 @@ import socket
 import time
 import numpy as np
 import threading
+import struct
+
 
 from ifxAvian import Avian
 from src.utils.doppler_raspi import DopplerAlgo
@@ -215,11 +217,22 @@ class PyGameInference:
 
     def get_class_name(self, label):
         return self.idx_to_class[label]
+    
+    def _recv_all(self, sock, size):
+        data = b''
+        while len(data) < size:
+            more = sock.recv(size - len(data))
+            if not more:
+                raise EOFError("Connection closed")
+            data += more
+        return data
 
     def run(self):
         # HOST = '192.168.1.2' # Raspi: HOST = '192.168.1.1'
         HOST = '127.0.0.1'
         PORT = 5005
+        SERVER_HOST = '0.0.0.0'
+        SERVER_PORT = 5006
         num_beams = 27         # number of beams
         max_angle_degrees = 40 # maximum angle, angle ranges from -40 to +40 degrees
 
@@ -238,8 +251,15 @@ class PyGameInference:
             mimo_mode = 'off'                 # MIMO disabled
         )
 
-        with Avian.Device() as device, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+        with Avian.Device() as device, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock, socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server:
+            # Sender
             sock.connect((HOST, PORT))
+
+            # Receiver
+            server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            server.bind((SERVER_HOST, SERVER_PORT))
+            server.listen(1)
+
             num_rx_antennas = 3 #device.get_sensor_information()["num_rx_antennas"]
             device.set_config(config)
 
@@ -270,6 +290,7 @@ class PyGameInference:
                     self.interpreter.set_tensor(self.input_details[0]['index'], rdtm_np)
                     self.interpreter.invoke()
 
+                    # Send data to TCP server
                     print("Sending data to TCP server...")
                     rdtm_np = rdtm_np.astype(np.float32)
                     sent_data = rdtm_np.tobytes()
@@ -277,11 +298,36 @@ class PyGameInference:
                     frame_size = len(sent_data)
                     sock.sendall(frame_size.to_bytes(4, 'big'))
                     sock.sendall(sent_data)
+
+                    # Receive data from TCP server
+                    print("Receiving data from TCP server...")
+                    conn, addr = server.accept()
+
+                    with conn:
+                        try:
+                            len_data = self._recv_all(conn, 4)  # Read the first 4 bytes for length
+
+                            # Unpack as a network-ordered (big-endian) unsigned integer
+                            payload_size = struct.unpack('!I', len_data)[0]  # Unpack the length
+
+                            payload = self._recv_all(conn, payload_size)
+                            num_floats = payload_size // 4  # Each float is 4 bytes
+                            floats = struct.unpack(f'<{num_floats}f', payload)
+                        except EOFError as e:
+                            print(f"Client disconnected: {e}")
+
+                    # Convert floats to numpy array
+                    floats = np.array(floats, dtype=np.float32) 
+                    floats = floats.reshape(1, -1)  # shape: (1, 4)
                     
-                    print("test1")
                     # TODO: get "output" from TCP
                     output = self.interpreter.get_tensor(self.output_details[0]['index'])
                     output = np.array(output)
+
+                    print(f"float array shape: {floats.shape}, output shape: {output.shape}")
+                    
+                    print(f"output: {output}")
+                    print(f"floats: {floats}")
                     
                     
                     if output.ndim == 1:
