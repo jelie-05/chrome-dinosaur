@@ -219,6 +219,7 @@ class PyGameInference:
     def run(self):
         with Device() as device:
             num_rx_antennas = device.get_sensor_information()["num_rx_antennas"]
+            print(f"version: {get_version()}")
             rx_mask = (1 << num_rx_antennas) - 1
 
             metric = {
@@ -237,6 +238,7 @@ class PyGameInference:
 
             cfg = device.metrics_to_config(**metric)
             print(f"Configuring device with: {cfg}")
+            input("Press Enter to continue...")
             device.set_config(**cfg)
 
             algo = DopplerAlgo(device.get_config(), num_rx_antennas)
