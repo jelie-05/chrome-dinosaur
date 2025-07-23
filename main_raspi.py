@@ -15,7 +15,7 @@ import struct
 
 
 from ifxAvian import Avian
-from src.utils.doppler_raspi import DopplerAlgo
+from src.utils.doppler_avian import DopplerAlgo
 from src.utils.common_raspi import do_inference_processing_np
 from src.utils.debouncer_time import DebouncerTime
 
