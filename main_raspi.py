@@ -2,7 +2,7 @@ import pygame
 import os
 import random
 # import onnxruntime as ort
-import tflite_runtime.interpreter as tflite
+# import tflite_runtime.interpreter as tflite
 
 from queue import Queue, Empty
 
@@ -21,8 +21,8 @@ from src.utils.debouncer_time import DebouncerTime
 
 pygame.init()
 
-SCREEN_HEIGHT = 600
-SCREEN_WIDTH = 1100
+SCREEN_HEIGHT = 1440 #600
+SCREEN_WIDTH = 2560 # 1100
 SCREEN = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 RUNNING = [pygame.image.load(os.path.join("pydino/Assets/Dino", "DinoRun1.png")),
@@ -161,14 +161,15 @@ class SmallCactus(Obstacle):
     def __init__(self, image):
         self.type = random.randint(0, 2)
         super().__init__(image, self.type)
-        self.rect.y = 330
+        self.rect.y = 340 #330
 
 
 class LargeCactus(Obstacle):
     def __init__(self, image):
         self.type = random.randint(0, 2)
         super().__init__(image, self.type)
-        self.rect.y = 315
+        self.rect.y = 325
+        self.rect.width = 0.8 * self.rect.width
 
 
 class Bird(Obstacle):
@@ -229,7 +230,7 @@ class PyGameInference:
 
     def run(self):
         # HOST = '192.168.1.2' # Raspi: HOST = '192.168.1.1'
-        HOST = '127.0.0.1'
+        HOST = '192.168.1.2' #'127.0.0.1' "192.168.1.2" 
         PORT = 5005
         SERVER_HOST = '0.0.0.0'
         SERVER_PORT = 5006
