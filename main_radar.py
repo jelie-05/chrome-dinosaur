@@ -200,8 +200,8 @@ class PyGameInference:
         self.input_details = self.interpreter.get_input_details()
         self.output_details = self.interpreter.get_output_details()
 
-        with open('runs/trained_models/train_0606-idx_mapping.pkl', 'rb') as f:
-            self.idx_to_class = pickle.load(f)
+        # with open('runs/trained_models/train_0606-idx_mapping.pkl', 'rb') as f:
+        #     self.idx_to_class = pickle.load(f)        
 
         self.label = 'nothing'
         self.label_lock = threading.Lock()
